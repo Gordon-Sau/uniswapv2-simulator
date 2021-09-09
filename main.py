@@ -18,7 +18,7 @@ class Pair:
                     self.liquiditySupply += fee
                     return fee
                 else:
-                    print(f"fee = {fee} <=s 0")
+                    print(f"fee = {fee} <= 0")
         return 0
 
     def _mint(self, amount0:float, amount1: float)->float:
@@ -74,14 +74,19 @@ class Pair:
         self.kLast = self.reserve0 * self.reserve1
         return (amount0, amount1, fee)
     
-    def swap(self, tokenType: int, amount: float)->float:
-        # TODO: implement swap
+    def swapIn(self, tokenType: int, amount: float)->float:
         if (tokenType % 2) == 0:
-            return 0
+            amount1 = amount * self.reserve1 * 997/ (self.reserve1 * 1000 + amount * 997)
+            assert (self.reserve1 >= amount1)
+            self.reserve0 += amount
+            self.reserve1 -= amount1
+            return amount1
         else:
-            return 0
-
-pair = Pair()
+            amount0 = amount * self.reserve0 * 997 / (self.reserve0 * 1000 + amount * 997)
+            assert (self.reserve0 >= amount0)
+            self.reserve0 -= amount0
+            self.reserve1 += amount
+            return amount0
 
 def transact(pair: Pair):
     inputTxt = input()
@@ -95,10 +100,11 @@ def transact(pair: Pair):
         print(f"user receives {amount0} token0s and {amount1} token1s")
         print(f"{fee} is charged as protocol fee")
     elif inputs[0].lower()[0] == "s":
-        outputTokenAmount = pair.swap(int(inputs[1]), float(inputs[2]))
+        outputTokenAmount = pair.swapIn(int(inputs[1]), float(inputs[2]))
         print(f"user receives {outputTokenAmount} token{~int(inputs[1])}s")
 
 if __name__ == "__main__":
+    pair = Pair()
     while True:
         transact(pair)
         print(f"reserve0: {pair.reserve0}    reserve1: {pair.reserve1}    liquiditySupply: {pair.liquiditySupply}")
