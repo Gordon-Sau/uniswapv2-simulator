@@ -92,19 +92,25 @@ def transact(pair: Pair):
     inputTxt = input()
     inputs = inputTxt.split()
     if inputs[0].lower()[0] == "a":
+        print("add liquidity:")
         (liquidityAmount, fee) = pair.addLiquidity(float(inputs[1]), float(inputs[2]))
         print(f"user recieves {liquidityAmount} liquidity tokens")
         print(f"{fee} is charged as protocol fee")
     elif inputs[0].lower()[0] == "r":
+        print("remove liquidity:")
         (amount0, amount1, fee) = pair.removeLiquidity(float(inputs[1]))
         print(f"user receives {amount0} token0s and {amount1} token1s")
         print(f"{fee} is charged as protocol fee")
     elif inputs[0].lower()[0] == "s":
+        print("swap:")
         outputTokenAmount = pair.swapIn(int(inputs[1]), float(inputs[2]))
-        print(f"user receives {outputTokenAmount} token{~int(inputs[1])}s")
+        print(f"user receives {outputTokenAmount} token{((int(inputs[1])+1)%2)}s")
 
 if __name__ == "__main__":
     pair = Pair()
     while True:
-        transact(pair)
-        print(f"reserve0: {pair.reserve0}    reserve1: {pair.reserve1}    liquiditySupply: {pair.liquiditySupply}")
+        try:
+            transact(pair)
+            print(f"reserve0: {pair.reserve0}    reserve1: {pair.reserve1}    liquiditySupply: {pair.liquiditySupply}\n")
+        except EOFError:
+            break
