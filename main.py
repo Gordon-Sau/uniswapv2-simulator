@@ -9,6 +9,7 @@ class Pair:
         self.kLast: float = 0
 
     def _mintFee(self)->float:
+        print(f"kLast: {self.kLast}")
         if self.kLast != 0:
             rootKLast = sqrt(self.kLast)
             rootK = sqrt(self.reserve0 * self.reserve1)
@@ -29,7 +30,7 @@ class Pair:
             self.kLast = self.reserve0 * self.reserve1
             return self.liquiditySupply
         else:
-            print(f"facotr0:{amount0 / self.reserve0}    factor1:{amount1 / self.reserve1}")
+            print(f"factor0:{amount0 / self.reserve0}    factor1:{amount1 / self.reserve1}")
             liquidityAmount = min(
                 amount0 / self.reserve0,
                 amount1 / self.reserve1
@@ -41,11 +42,7 @@ class Pair:
             return liquidityAmount
 
     def addLiquidity(self, amount0: float, amount1: float)->Tuple[float, float]:
-        if self.liquiditySupply == 0:
-            fee = self._mintFee()
-            liquidityAmount = self._mint(amount0, amount1)
-            return liquidityAmount, fee
-        else:
+        if self.liquiditySupply != 0:
             liquidityAmount: float
             factor = amount0 / self.reserve0
             amount1Required = self.reserve1 * factor
@@ -59,9 +56,9 @@ class Pair:
                 print(f"user deposits {amount0} token0s and {amount1Required} token1s")
                 amount1 = amount1Required
 
-            fee = self._mintFee()
-            liquidityAmount = self._mint(amount0, amount1)
-            return liquidityAmount, fee
+        fee = self._mintFee()
+        liquidityAmount = self._mint(amount0, amount1)
+        return liquidityAmount, fee
 
     def removeLiquidity(self, liquidityAmount: float)->Tuple[float, float, float]:
         assert(liquidityAmount <= self.liquiditySupply)
@@ -76,13 +73,13 @@ class Pair:
     
     def swapIn(self, tokenType: int, amount: float)->float:
         if (tokenType % 2) == 0:
-            amount1 = amount * self.reserve1 * 997/ (self.reserve1 * 1000 + amount * 997)
+            amount1 = amount * self.reserve1 * 997/ (self.reserve0 * 1000 + amount * 997)
             assert (self.reserve1 >= amount1)
             self.reserve0 += amount
             self.reserve1 -= amount1
             return amount1
         else:
-            amount0 = amount * self.reserve0 * 997 / (self.reserve0 * 1000 + amount * 997)
+            amount0 = amount * self.reserve0 * 997 / (self.reserve1 * 1000 + amount * 997)
             assert (self.reserve0 >= amount0)
             self.reserve0 -= amount0
             self.reserve1 += amount
